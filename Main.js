@@ -25,6 +25,7 @@ app.get('/api/profiles', function (req, res) {
   });
 });
 
+//expose 'profile' resource
 app.get('/api/profiles/:id', function (req, res) {
   fs.readFile('Data.json', 'utf8', function (err, data) {
 
@@ -61,6 +62,37 @@ app.post('/api/profiles', function (req, res) {
   });
 });
 
+//expose 'profile' resource update
+app.put('/api/profiles/:id', function (req, res) {
+  var id, body;
+
+  id = req.params.id;
+  body = req.body;
+
+  if (!isProfileValid(body, res)) return;
+
+  body.id = req.params.id;
+
+  fs.readFile('Data.json', 'utf8', function (err, data) {
+    var profiles, profile
+
+    profiles = JSON.parse(data);
+    profile = _.findWhere(profiles, {id: id});
+
+    if(!isProfilePresent(profile, res)) return;
+
+    profiles = _.remove(profiles, function(entry) {
+      return entry.id == profile.id
+    });
+    profiles.push(body);
+
+    fs.writeFile("Data.json", JSON.stringify(profiles, null, 2), function (err) {
+      return res.status(200).json(body);
+    });
+  });
+});
+
+
 var isProfileValid = function (profile, res) {
   if (!profile.age || !profile.first || !profile.last || !profile.email || !profile.phone) {
     return res.status(400).json({
@@ -71,7 +103,20 @@ var isProfileValid = function (profile, res) {
     return false;
   }
   return true;
-}
+};
+
+
+var isProfilePresent = function(profile, res) {
+  if (!profile) {
+    res.status(422).json({
+      code: 422,
+      message: 'Unprocessable Entity',
+      reason: 'The profile you requested does not exist.'
+    });
+    return false;
+  }
+  return true;
+};
 
 //start application by listening on port 3000
 app.listen(3000);
