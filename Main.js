@@ -26,9 +26,31 @@ app.get('/api/profiles', function (req, res) {
     profiles = JSON.parse(data);
     results = _.filter(profiles, _.omit(req.query, 'sort', 'page', 'size'));
 
+    if (req.query.sort) {
+      var sortBy, sortFields, sortDirections;
+
+      sortBy = _.map(req.query.sort.split(','), function (sort) {
+        var firstCharIsDirection, sortDirection, sortField;
+        firstCharIsDirection = _.includes(['+', '-'], sort.substring(0, 1));
+
+        sortDirection =  firstCharIsDirection ? sort.substring(0, 1) : '+';
+        sortField = firstCharIsDirection ? sort.substring(1) : sort;
+
+        return {
+          field: sortField,
+          direction: sortDirection == '+' ? true : false
+        };
+      });
+
+      sortFields = _.pluck(sortBy, 'field');
+      sortDirections = _.pluck(sortBy, 'direction');
+
+      results = _.sortByOrder(results, sortFields, sortDirections);
+    }
+
     status = 200;
-    if(results.length < profiles.length) status = 206;
-    if(results.length == 0) status = 204;
+    if (results.length < profiles.length) status = 206;
+    if (results.length == 0) status = 204;
 
     return res.status(status).json(results);
   });
@@ -42,7 +64,7 @@ app.get('/api/profiles/:id', function (req, res) {
     profiles = JSON.parse(data)
     profile = _.findWhere(profiles, {id: req.params.id});
 
-    if(!isProfilePresent(profile, res)) return;
+    if (!isProfilePresent(profile, res)) return;
 
     return res.json(data);
   });
@@ -83,9 +105,9 @@ app.put('/api/profiles/:id', function (req, res) {
     profiles = JSON.parse(data);
     profile = _.findWhere(profiles, {id: id});
 
-    if(!isProfilePresent(profile, res)) return;
+    if (!isProfilePresent(profile, res)) return;
 
-    profiles = _.remove(profiles, function(entry) {
+    profiles = _.remove(profiles, function (entry) {
       return entry.id == profile.id
     });
     profiles.push(body);
@@ -112,7 +134,7 @@ app.patch('/api/profiles/:id', function (req, res) {
     profiles = JSON.parse(data);
     profile = _.findWhere(profiles, {id: id});
 
-    if(!isProfilePresent(profile, res)) return;
+    if (!isProfilePresent(profile, res)) return;
 
     _.assign(profile, body);
 
@@ -135,9 +157,9 @@ app.delete('/api/profiles/:id', function (req, res) {
     profiles = JSON.parse(data);
     profile = _.findWhere(profiles, {id: id});
 
-    if(!isProfilePresent(profile, res)) return;
+    if (!isProfilePresent(profile, res)) return;
 
-    profiles = _.remove(profiles, function(entry) {
+    profiles = _.remove(profiles, function (entry) {
       return entry.id == profile.id
     });
 
@@ -160,7 +182,7 @@ var isProfileValisd = function (profile, res) {
 };
 
 
-var isProfilePresent = function(profile, res) {
+var isProfilePresent = function (profile, res) {
   if (!profile) {
     res.status(422).json({
       code: 422,
