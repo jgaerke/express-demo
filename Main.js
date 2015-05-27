@@ -92,8 +92,34 @@ app.put('/api/profiles/:id', function (req, res) {
   });
 });
 
+//expose 'profile' resource patch
+app.patch('/api/profiles/:id', function (req, res) {
+  var id, body;
 
-var isProfileValid = function (profile, res) {
+  id = req.params.id;
+  body = req.body;
+
+
+  body.id = req.params.id;
+
+  fs.readFile('Data.json', 'utf8', function (err, data) {
+    var profiles, profile
+
+    profiles = JSON.parse(data);
+    profile = _.findWhere(profiles, {id: id});
+
+    if(!isProfilePresent(profile, res)) return;
+
+    _.assign(profile, body);
+
+    fs.writeFile("Data.json", JSON.stringify(profiles, null, 2), function (err) {
+      return res.status(200).json(body);
+    });
+  });
+});
+
+
+var isProfileValisd = function (profile, res) {
   if (!profile.age || !profile.first || !profile.last || !profile.email || !profile.phone) {
     return res.status(400).json({
       code: 400,
