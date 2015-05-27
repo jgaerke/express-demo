@@ -1,0 +1,20 @@
+[
+  {
+    "id": "5565dc38284900808c210e46",
+    "isActive": true,
+    "age": 31,
+    "first": "Gentry",
+    "last": "Mccormick",
+    "email": "gentrymccormick@accusage.com",
+    "phone": "513-518-2048"
+  },
+  {
+    "id": "5565dc38518bc5102eb29a16",
+    "isActive": false,
+    "age": 38,
+    "first": "Sophia",
+    "last": "Pennington",
+    "email": "sophiapennington@accusage.com",
+    "phone": "513-527-2883"
+  }
+]
