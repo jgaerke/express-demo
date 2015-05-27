@@ -118,6 +118,31 @@ app.patch('/api/profiles/:id', function (req, res) {
   });
 });
 
+//expose 'profile' resource delete
+app.delete('/api/profiles/:id', function (req, res) {
+  var id, body;
+
+  id = req.params.id;
+  body = req.body;
+
+  fs.readFile('Data.json', 'utf8', function (err, data) {
+    var profiles, profile
+
+    profiles = JSON.parse(data);
+    profile = _.findWhere(profiles, {id: id});
+
+    if(!isProfilePresent(profile, res)) return;
+
+    profiles = _.remove(profiles, function(entry) {
+      return entry.id == profile.id
+    });
+
+    fs.writeFile("Data.json", JSON.stringify(profiles, null, 2), function (err) {
+      return res.status(204);
+    });
+  });
+});
+
 
 var isProfileValisd = function (profile, res) {
   if (!profile.age || !profile.first || !profile.last || !profile.email || !profile.phone) {
