@@ -21,24 +21,28 @@ app.get('/', function (req, res) {
 //expose 'profiles' collection
 app.get('/api/profiles', function (req, res) {
   fs.readFile('Data.json', 'utf8', function (err, data) {
-    return res.json(JSON.parse(data));
+    var profiles, results, status;
+
+    profiles = JSON.parse(data);
+    results = _.filter(profiles, _.omit(req.query, 'sort', 'page', 'size'));
+
+    status = 200;
+    if(results.length < profiles.length) status = 206;
+    if(results.length == 0) status = 204;
+
+    return res.status(status).json(results);
   });
 });
 
 //expose 'profile' resource
 app.get('/api/profiles/:id', function (req, res) {
   fs.readFile('Data.json', 'utf8', function (err, data) {
+    var profiles, profile;
 
-    data = JSON.parse(data)
-    data = _.findWhere(data, {id: req.params.id});
+    profiles = JSON.parse(data)
+    profile = _.findWhere(profiles, {id: req.params.id});
 
-    if (!data) {
-      return res.status(422).json({
-        code: 422,
-        message: 'Unprocessable Entity',
-        reason: 'The profile you requested does not exist.'
-      });
-    }
+    if(!isProfilePresent(profile, res)) return;
 
     return res.json(data);
   });
@@ -142,7 +146,6 @@ app.delete('/api/profiles/:id', function (req, res) {
     });
   });
 });
-
 
 var isProfileValisd = function (profile, res) {
   if (!profile.age || !profile.first || !profile.last || !profile.email || !profile.phone) {
