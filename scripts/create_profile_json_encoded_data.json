@@ -4,5 +4,6 @@
   "first": "Jeremy",
   "last": "Gaerke",
   "email": "jgaerke@gmail.com",
-  "phone": "513-535-7594"
+  "phone": "513-535-7594",
+  "foo": "bar"
 }
